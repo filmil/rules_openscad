@@ -5,7 +5,34 @@ This module contains a set of rules compile 3D models written in OpenSCAD code t
 - [scad_test](#scad_test): Unit-testing framework for libraries. Both compares the result of code using the library with golden STLs, but also ensures that invalid uses of the library assert out
 
 ## Prerequisites
-These rules need OpenSCAD to be installed on your machine, and available within the path
+These rules need OpenSCAD: either installed on your machine and available within the path, or from a
+registered OpenSCAD toolchain (see [Using a pinned OpenSCAD](#using-a-pinned-openscad)).
+
+## Using a pinned OpenSCAD
+To build with an OpenSCAD of your choice instead of the one on the host, which makes the build hermetic,
+declare an `openscad_toolchain` and register it. The rules use it when one is registered, and the host's
+`openscad` otherwise.
+
+```
+load("@rules_openscad//:toolchain.bzl", "openscad_toolchain")
+
+openscad_toolchain(
+    name = "my_openscad_impl",
+    openscad = "@my_openscad//:bin/openscad",
+    data = ["@my_openscad//:all_files"],  # its libraries, fonts and the like
+)
+
+toolchain(
+    name = "my_openscad",
+    toolchain = ":my_openscad_impl",
+    toolchain_type = "@rules_openscad//:toolchain_type",
+)
+```
+
+and in your `MODULE.bazel`:
+```
+register_toolchains("//:my_openscad")
+```
 
 ## Setup
 In order to use these rules in your BUILD files you need to first add this module as a dependency on your `MODULES.bazel` file, and then add the rules to your `BUILD` file
